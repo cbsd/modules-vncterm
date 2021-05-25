@@ -65,7 +65,7 @@ if [ -n "${vm_port}" ]; then
 else
 	. ${distdir}/virtual.subr
 
-	vm_port=$( get_next_tcp_port -a 127.0.0.1 -s 5900 -e 6900 )
+	vm_port=$( get-next-tcp-port address=127.0.0.1 start_port=5900 end_port=6900 )
 	_ret=$?
 	port_args="-p ${vm_port}"
 fi

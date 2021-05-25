@@ -1,5 +1,3 @@
-# vncterm
-CBSD module: access into jail via VNC
 
 This module requires the libvncserver and gnutls, please install first, e.g:
 

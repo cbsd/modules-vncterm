@@ -9,14 +9,13 @@ vm_port= PORT for listen, default - 0 \(auto\)\n\
 command= run comman on start, default: /bin/csh\n\
 password= set password\n"
 
-. ${subr}
-. ${system}
-. ${tools}
-. ${strings}
+. ${subrdir}/nc.subr
+. ${subrdir}/system.subr
+. ${subrdir}/tools.subr
+. ${subrdir}/strings.subr
 
 . ${cbsdinit}
-
-. ${jrcconf}
+. ${subrdir}/rcconf.subr
 [ $? -eq 1 ] && err 1 "${N1_COLOR}No such jail: ${N2_COLOR}${jname}${N0_COLOR}"
 [ ${jid} -eq 0 ] && err 1 "${N1_COLOR}Not running${N0_COLOR}"
 

@@ -9,11 +9,10 @@ vm_port= PORT for listen, default - 0 \(auto\)\n\
 command= run comman on start, default: /bin/csh\n\
 password= set password\n"
 
-. ${subr}
-. ${system}
-. ${tools}
-. ${strings}
-
+. ${subrdir}/nc.subr
+. ${subrdir}/system.subr
+. ${subrdir}/tools.subr
+. ${subrdir}/strings.subr
 . ${cbsdinit}
 
 test_for_stop()
@@ -44,7 +43,7 @@ vnc_stop()
 	exit 0
 }
 
-. ${jrcconf}
+. ${subrdir}/rcconf.subr
 [ $? -eq 1 ] && err 1 "${MAGENTA}No such jail: ${GREEN}${jname}${NORMAL}"
 [ ${jid} -eq 0 ] && err 1 "${MAGENTA}Not running${NORMAL}"
 

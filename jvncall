@@ -5,10 +5,10 @@ MYOPTARG=""
 MYDESC="Mass start or stop VNC server for active jail"
 ADDHELP="mode=run, stop, status\n"
 
-. ${subr}
-. ${system}
-. ${tools}
-. ${strings}
+. ${subrdir}/nc.subr
+. ${subrdir}/system.subr
+. ${subrdir}/tools.subr
+. ${subrdir}/strings.subr
 
 . ${cbsdinit}
 

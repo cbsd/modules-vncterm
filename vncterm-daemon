@@ -62,8 +62,7 @@ fi
 if [ -n "${vm_port}" ]; then
 	port_args="-p ${vm_port}"
 else
-	. ${distdir}/virtual.subr
-
+	. ${subrdir}/virtual.subr
 	vm_port=$( get-next-tcp-port address=127.0.0.1 start_port=5900 end_port=6900 )
 	_ret=$?
 	port_args="-p ${vm_port}"
@@ -72,6 +71,8 @@ fi
 if [ -n "${addr}" ]; then
 	addr_args="-a 127.0.0.1"
 fi
+
+[ -z "${vm_port}" ] && stderr 1 "${N2_COLOR}${CBSD_APP} error: empty vm_port${N0_COLOR}"
 
 vnc_lockfile="/tmp/cbsd-vnc-${jname}.lock"
 vnc_pidfile="/tmp/cbsd-vnc-${jname}.pid"
@@ -94,7 +95,7 @@ case "${mode}" in
 		echo "${vm_port}" > ${vnc_port}
 
 		while [ ${stopme} -eq 0 ]; do
-			/usr/sbin/daemon /usr/bin/lockf -s -t0 ${vnc_lockfile} ${cbsdvnc} -j ${jid} -s ${command} ${password_args} ${port_args} ${addr_args} -i ${vnc_pidfile}
+			${DAEMON_CMD} ${LOCKF_CMD} -s -t0 ${vnc_lockfile} ${cbsdvnc} -j ${jid} -s ${command} ${password_args} ${port_args} ${addr_args} -i ${vnc_pidfile}
 			sleep 1
 			${ECHO} "${MAGENTA}VRDP is enabled. VNC port: ${GREEN}${vm_port}. ${MAGENTA}VNC pass: ${GREEN}${password}${NORMAL}${NORMAL}"
 			watchtest=$( cbsd_fwatch --file=${vnc_lockfile} --timeout=0 )

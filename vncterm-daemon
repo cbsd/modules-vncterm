@@ -87,7 +87,7 @@ case "${mode}" in
 			err 1 "${MAGENTA}Locked by ${vnc_lockfile} with pid: ${GREEN}${pid}${NORMAL}"
 		fi
 
-		trap "${RM_CMD} -f ${vnc_lockfile} ${vnc_pidfile} ${vncstat} ${vnc_port}" HUP INT ABRT BUS TERM EXIT KILL
+		trap "${RM_CMD} -f ${vnc_lockfile} ${vnc_pidfile} ${vncstat}" HUP INT ABRT BUS TERM EXIT KILL
 
 		stopme=0
 

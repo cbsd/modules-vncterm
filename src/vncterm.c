@@ -1766,7 +1766,6 @@ vncTerm *
 create_vncterm (int argc, char** argv, int maxx, int maxy)
 {
   int i;
-  int ok;
 
   rfbScreenInfoPtr screen = rfbGetScreen (&argc, argv, maxx, maxy, 8, 1, 1);
   screen->frameBuffer=(char*)calloc(maxx*maxy, 1);
@@ -1807,8 +1806,6 @@ create_vncterm (int argc, char** argv, int maxx, int maxy)
 //		vncport=FindFreeTcpPort();
 //		screen->port = vncport;
 //    }
-
-    ok = 1;
 
     if (listen_str != NULL) {
 		in_addr_t iface = inet_addr(listen_str);

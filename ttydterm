@@ -16,7 +16,7 @@ cixinit
 [ ${jid} -eq 0 ] && err 1 "${N1_COLOR}Not running${N0_COLOR}"
 
 if [ -n "${ip}" ]; then
-	extra_allow="allow ${2};"
+	extra_allow="allow ${ip};"
 else
 	extra_allow=
 fi

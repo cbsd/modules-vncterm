@@ -1,0 +1,82 @@
+#!/usr/local/bin/cbsd
+CIXARG="jname"
+CIXOPTARG="ip"
+MYDESC="Run TTYD server for jail"
+ADDHELP=""
+
+. ${subrdir}/nc.subr
+. ${subrdir}/system.subr
+. ${subrdir}/tools.subr
+. ${subrdir}/strings.subr
+
+ip=
+cixinit
+. ${subrdir}/rcconf.subr
+[ $? -eq 1 ] && err 1 "${N1_COLOR}No such jail: ${N2_COLOR}${jname}${N0_COLOR}"
+[ ${jid} -eq 0 ] && err 1 "${N1_COLOR}Not running${N0_COLOR}"
+
+if [ -n "${ip}" ]; then
+	extra_allow="allow ${2};"
+else
+	extra_allow=
+fi
+
+case "${platform}" in
+	FreeBSD)
+		NGINX_ROOT="/usr/local/etc/nginx"
+		RUN_DIR="/var/run"
+		;;
+	*)
+		NGINX_ROOT="/etc/nginx"
+		RUN_DIR="/run"
+		;;
+esac
+
+[ ! -d ${NGINX_ROOT}/ttyd-streams-enabled ] && ${MKDIR_CMD} -p ${NGINX_ROOT}/ttyd-streams-enabled
+[ ! -d ${NGINX_ROOT}/ttyd-locations-enabled ] && ${MKDIR_CMD} -p ${NGINX_ROOT}/ttyd-locations-enabled
+
+${CAT_CMD} >${NGINX_ROOT}/ttyd-streams-enabled/${jname}.conf<<EOF
+upstream ttyd_jail_${jname}_back {
+	server unix:${RUN_DIR}/ttyd-jail-${jname}.sock;
+}
+EOF
+
+${CAT_CMD} >${NGINX_ROOT}/ttyd-locations-enabled/ttyd-jail.conf<<EOF
+location /jailshell/ {
+	allow 127.0.0.1;
+	${extra_allow}
+	deny all;
+
+	proxy_pass http://ttyd_jail_${jname}_back/;
+	proxy_read_timeout    90s;
+	proxy_connect_timeout 90s;
+	proxy_send_timeout    90s;
+	proxy_http_version    1.1;
+	proxy_set_header      Host \$http_host;
+	proxy_set_header      X-Forwarded-Proto \$scheme;
+	proxy_set_header      X-Forwarded-For \$proxy_add_x_forwarded_for;
+	proxy_set_header      Upgrade \$http_upgrade;
+	proxy_set_header      Connection "upgrade";
+}
+EOF
+
+${SERVICE_CMD} nginx reload
+
+if [ -r ${RUN_DIR}/ttyd-jail-${jname}.pid ]; then
+	read -r _pid < ${RUN_DIR}/ttyd-jail-${jname}.pid
+	${PS_CMD} -p ${_pid} | ${GREP_CMD} -q ttyd
+	_ret=$?
+	if [ ${_ret} -eq 0 ]; then
+		${KILL_CMD} -9 ${_pid}
+	fi
+	${RM_CMD} -f ${RUN_DIR}/ttyd-jail-${jname}.pid
+fi
+[ -e ${RUN_DIR}/ttyd-jail-${jname}.sock ] && ${RM_CMD} -f ${RUN_DIR}/ttyd-jail-${jname}.sock
+/usr/sbin/daemon -p ${RUN_DIR}/ttyd-jail-${jname}.pid -f /usr/local/bin/ttyd -i ${RUN_DIR}/ttyd-jail-${jname}.sock -d 3 -T xterm-256color -m 8 -P 30 -t fontSize=15 -t titleFixed=${jname} -W --socket-owner www:www /usr/local/bin/cbsd jlogin jname=${jname}
+
+for i in 1 2 3 4 5 6 7 8 9 10; do
+	sleep 0.1
+	[ -e ${RUN_DIR}/ttyd-jail-${jname}.sock ] && exit 0
+done
+
+exit 1
